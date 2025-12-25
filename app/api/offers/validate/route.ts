@@ -15,7 +15,6 @@ export async function POST(request: NextRequest) {
     } = await request.json();
 
     if (!offerCode || offerCode.trim() === '') {
-      console.log("Validation Failed: Offer code is required");
       return NextResponse.json({ error: "Offer code is required" }, { status: 400 });
     }
 
@@ -41,7 +40,6 @@ export async function POST(request: NextRequest) {
     `;
 
     if (!offers || offers.length === 0) {
-      console.log("Validation Failed: No active offers found in DB");
       return NextResponse.json({ error: "No active offers available" }, { status: 404 });
     }
 
@@ -95,7 +93,6 @@ export async function POST(request: NextRequest) {
 
     // Minimum order value check
     if (restrictions.minimumOrderValue > 0 && orderTotal < restrictions.minimumOrderValue) {
-      console.log(`Validation Failed: Min order value ${restrictions.minimumOrderValue} > ${orderTotal}`);
       return NextResponse.json({
         error: `Minimum order value of ${currencySymbol}${restrictions.minimumOrderValue.toFixed(2)} required`,
         requiredAmount: restrictions.minimumOrderValue,
@@ -115,9 +112,6 @@ export async function POST(request: NextRequest) {
     if (restrictions.userTypeRestriction && restrictions.userTypeRestriction.trim() !== "") {
 
       // Count user's previous orders
-      // Count user's previous orders
-      // Check both user_id (internal) and clerk_user_id (clerk) to catch all orders
-      // internalUserId is derived from `userId` (clerk id) at the top of the function
       if (internalUserId) {
         const userOrders = await sql`
             SELECT COUNT(*)::int AS order_count
@@ -132,7 +126,6 @@ export async function POST(request: NextRequest) {
         // NEW USERS ONLY → must have 0 orders
         if (restrictions.userTypeRestriction === "new") {
           if (orderCount > 0) {
-            console.log(`Validation Failed: User is not new (orderCount: ${orderCount})`);
             return NextResponse.json(
               { error: "This offer is only for new users" },
               { status: 400 }
@@ -150,7 +143,6 @@ export async function POST(request: NextRequest) {
           }
         }
       } else if (userId === 'guest') {
-        // Guest users are treated as "new" (0 orders)
         if (restrictions.userTypeRestriction === "returning") {
           return NextResponse.json(
             { error: "This offer is only for returning users (please login)" },

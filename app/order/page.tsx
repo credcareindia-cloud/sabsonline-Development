@@ -681,9 +681,6 @@ export default function OrderPage() {
         const result = await response.json()
         let errorMessage = result.error || "Invalid coupon code"
 
-        // FALLBACK: If regular validation failed with "Invalid offer code" (or generic 400),
-        // and we haven't tried welcome validation yet, try it now/
-        // This handles cases where userAvailableCoupons list might be stale or incomplete.
         if (!isWelcomeCoupon && isAuthenticated && user?.id &&
           (errorMessage === "Invalid offer code" || errorMessage === "Offer code is required")) {
           console.log('Regular validation failed, attempting welcome coupon fallback for:', upperCaseCouponCode)
